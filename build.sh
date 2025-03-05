@@ -7,7 +7,7 @@ fi
 
 TARGET=$1
 
-git clone https://gn.googlesource.com/gn gn --depth=1
+git clone https://gn.googlesource.com/gn gn
 cd gn
 
 python3 build/gen.py
@@ -16,9 +16,9 @@ ninja -C out
 
 mkdir ../dist
 
-ls -lh out/gn
+ls -lh out
 
-cp out/gn ../dist
+cp -r out/gn* ../dist
 
 cd ..
 

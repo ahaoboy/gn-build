@@ -56,9 +56,11 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         run: |
           sudo apt install ninja-build git clang python3 -y
-      - name: ubuntu install
+      - name: macos install
         if: startsWith(matrix.os, 'macos')
         run: |
+          brew install --cask clay
+          brew install clang-build-analyzer
           brew install ninja git clang
 
       - name: build-${{ matrix.target }}

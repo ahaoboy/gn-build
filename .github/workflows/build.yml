@@ -1,0 +1,97 @@
+name: build
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - "v*"
+    branches:
+      - "main"
+  pull_request:
+
+defaults:
+  run:
+    shell: bash --noprofile --norc -CeEuo pipefail {0}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-apple-darwin
+            os: macos-13
+          - target: aarch64-apple-darwin
+            os: macos-14
+          - target: x86_64-pc-windows-gnu
+            os: windows-latest
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-24.04
+    runs-on: ${{ matrix.os }}
+    name: build-${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        if: matrix.os == 'windows-latest'
+        with:
+          msystem: MINGW64
+          update: true
+          path-type: inherit
+          install: >-
+            mingw-w64-x86_64-make
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-clang
+            mingw-w64-x86_64-perl
+            mingw-w64-x86_64-python3
+            mingw-w64-x86_64-ninja
+            zip
+            unzip
+            curl
+            wget
+
+      - name: ubuntu install
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt install ninja-build git clang python3 -y
+      - name: ubuntu install
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          brew install ninja git clang
+
+      - name: build-${{ matrix.target }}
+        if: matrix.os != 'windows-latest'
+        shell: "bash"
+        run: |
+          bash build.sh ${{ matrix.target }}
+
+      - name: build-windows
+        if: matrix.os == 'windows-latest'
+        shell: msys2 {0}
+        run: |
+          bash build.sh ${{ matrix.target }}
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: gn-${{ matrix.target }}
+          path: ./gn-${{ matrix.target }}.tar.gz
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: gn
+          pattern: gn*
+          merge-multiple: true
+
+      - name: release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "gn/*.tar.gz"

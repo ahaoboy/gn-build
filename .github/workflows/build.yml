@@ -59,9 +59,7 @@ jobs:
       - name: macos install
         if: startsWith(matrix.os, 'macos')
         run: |
-          brew install --cask clay
-          brew install clang-build-analyzer
-          brew install ninja git clang
+          brew install ninja
 
       - name: build-${{ matrix.target }}
         if: matrix.os != 'windows-latest'

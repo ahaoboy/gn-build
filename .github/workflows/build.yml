@@ -5,10 +5,6 @@ permissions:
 
 on:
   push:
-    tags:
-      - "v*"
-    branches:
-      - "main"
   pull_request:
 
 defaults:
@@ -25,8 +21,8 @@ jobs:
             os: macos-13
           - target: aarch64-apple-darwin
             os: macos-14
-          # - target: x86_64-pc-windows-gnu
-          #   os: windows-latest
+          - target: x86_64-pc-windows-gnu
+            os: windows-latest
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-24.04
     runs-on: ${{ matrix.os }}
@@ -40,18 +36,7 @@ jobs:
           update: true
           path-type: inherit
           install: >-
-            mingw-w64-x86_64-make
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-clang
-            mingw-w64-x86_64-perl
-            mingw-w64-x86_64-python3
-            mingw-w64-x86_64-ninja
-            zip
-            unzip
-            curl
-            wget
-
+            mingw-w64-x86_64-gn
       - name: ubuntu install
         if: startsWith(matrix.os, 'ubuntu')
         run: |
@@ -71,8 +56,11 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: msys2 {0}
         run: |
-          bash build.sh ${{ matrix.target }}
-
+          mkdir dist
+          cp $(which gn) dist/gn
+          ls -lh dist
+          tar -czf ./gn-${{ matrix.target }}.tar.gz -C dist .
+          ls -l ./gn-${{ matrix.target }}.tar.gz
       - name: Upload
         uses: actions/upload-artifact@v4
         with:

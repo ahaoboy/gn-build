@@ -10,6 +10,10 @@ TARGET=$1
 git clone https://gn.googlesource.com/gn gn
 cd gn
 
+git apply  ../001-build-fixes.patch
+git apply  ../003-remove-msvc-flags.patch
+git apply  ../004-add-arm64-arch.patch
+
 python3 build/gen.py
 
 ninja -C out

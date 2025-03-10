@@ -59,8 +59,8 @@ jobs:
           mkdir dist
           cp $(which gn) dist/gn
           ls -lh dist
-          tar -czf ./gn-${TARGET}.tar.gz -C dist .
-          ls -l ./gn-${TARGET}.tar.gz
+          tar -czf ./gn-${{ TARGET }}.tar.gz -C dist .
+          ls -l ./gn-${{ TARGET }}.tar.gz
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
